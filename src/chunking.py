@@ -240,6 +240,159 @@ class FAQPairChunker:
         return chunks
 
 
+class StructureAwareChunker:
+    """
+    Split markdown-like policy documents by structure first.
+
+    The chunker prefers headings, numbered clauses, and bullet lists, then
+    packs blocks into approximate token budgets. It also drops repeated
+    boilerplate lines that add noise to retrieval.
+    """
+
+    DEFAULT_TARGET_TOKENS = 400
+    DEFAULT_OVERLAP_TOKENS = 60
+    BOILERPLATE_LINES = {
+        "xin chào, shopee có thể giúp gì cho bạn?",
+        "bạn có hài lòng với bài viết này?",
+        "hài lòng",
+        "không hài lòng",
+    }
+
+    def __init__(self, target_tokens: int = DEFAULT_TARGET_TOKENS, overlap_tokens: int = DEFAULT_OVERLAP_TOKENS) -> None:
+        self.target_tokens = max(1, target_tokens)
+        self.overlap_tokens = max(0, min(overlap_tokens, self.target_tokens - 1))
+
+    def chunk(self, text: str) -> list[str]:
+        if not text:
+            return []
+
+        blocks = self._build_blocks(text)
+        if not blocks:
+            return []
+
+        chunks: list[str] = []
+        current_blocks: list[str] = []
+        carryover = ""
+
+        def flush_current() -> None:
+            nonlocal current_blocks, carryover
+            if not current_blocks:
+                return
+
+            chunk = "\n\n".join(current_blocks).strip()
+            if chunk:
+                chunks.append(chunk)
+                carryover = self._tail_tokens(chunk, self.overlap_tokens)
+            current_blocks = []
+
+        for block in blocks:
+            for segment in self._split_overlong_block(block):
+                segment = segment.strip()
+                if not segment:
+                    continue
+
+                if not current_blocks and carryover:
+                    current_blocks.append(carryover)
+
+                candidate_blocks = current_blocks + [segment]
+                candidate_chunk = "\n\n".join(candidate_blocks).strip()
+
+                if current_blocks and self._token_count(candidate_chunk) > self.target_tokens:
+                    flush_current()
+                    if carryover:
+                        current_blocks = [carryover]
+                    candidate_blocks = current_blocks + [segment]
+                    candidate_chunk = "\n\n".join(candidate_blocks).strip()
+
+                if current_blocks and self._token_count(candidate_chunk) > self.target_tokens:
+                    flush_current()
+                    current_blocks = [segment]
+                    continue
+
+                current_blocks.append(segment)
+
+        flush_current()
+        return chunks
+
+    def _build_blocks(self, text: str) -> list[str]:
+        blocks: list[str] = []
+        paragraph_lines: list[str] = []
+
+        def flush_paragraph() -> None:
+            if paragraph_lines:
+                paragraph = " ".join(paragraph_lines).strip()
+                if paragraph:
+                    blocks.append(paragraph)
+                paragraph_lines.clear()
+
+        for raw_line in text.splitlines():
+            line = raw_line.strip()
+            if not line:
+                flush_paragraph()
+                continue
+
+            if self._is_boilerplate_line(line):
+                continue
+
+            if self._is_structure_line(line):
+                flush_paragraph()
+                blocks.append(line)
+                continue
+
+            paragraph_lines.append(line)
+
+        flush_paragraph()
+        return blocks
+
+    def _is_boilerplate_line(self, line: str) -> bool:
+        return line.casefold() in self.BOILERPLATE_LINES
+
+    def _is_structure_line(self, line: str) -> bool:
+        if re.match(r"^#{1,6}\s+\S", line):
+            return True
+        if re.match(r"^(?:\d+(?:\.\d+)*|[ivxlcdm]+|[a-z])(?:[.)]|\.)\s+\S", line, flags=re.IGNORECASE):
+            return True
+        if re.match(r"^(?:[-*+•])\s+\S", line):
+            return True
+        return False
+
+    def _split_overlong_block(self, block: str) -> list[str]:
+        if self._token_count(block) <= self.target_tokens:
+            return [block]
+
+        sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", block) if part.strip()]
+        if len(sentences) > 1:
+            return sentences
+
+        words = block.split()
+        if len(words) <= self.target_tokens:
+            return [block]
+
+        segments: list[str] = []
+        step = max(1, self.target_tokens - self.overlap_tokens)
+
+        for start in range(0, len(words), step):
+            segment_words = words[start : start + self.target_tokens]
+            segment = " ".join(segment_words).strip()
+            if segment:
+                segments.append(segment)
+            if start + self.target_tokens >= len(words):
+                break
+
+        return segments or [block]
+
+    def _token_count(self, text: str) -> int:
+        return len(text.split())
+
+    def _tail_tokens(self, text: str, count: int) -> str:
+        if count <= 0:
+            return ""
+        words = text.split()
+        if not words:
+            return ""
+        return " ".join(words[-count:])
+
+
 def _dot(a: list[float], b: list[float]) -> float:
     return sum(x * y for x, y in zip(a, b))
 

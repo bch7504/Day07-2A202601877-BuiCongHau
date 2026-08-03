@@ -60,12 +60,12 @@ Chạy `ChunkingStrategyComparator().compare()` trên tài liệu `shopee-spayla
 ### Chiến lược của từng thành viên
 
 **Thành viên 1 — Nguyễn Tuấn Hùng**
-- **Loại chiến lược:** FixedSize
-- **Mô tả & lý do chọn cho chủ đề này:** Sử dụng FixedSizeChunker cắt cứng văn bản theo kích thước ký tự cố định và có độ gối đầu (overlap). Đây là cách tiếp cận đơn giản nhất để làm mốc baseline so sánh.
+- **Loại chiến lược:** Structure-Aware
+- **Mô tả & lý do chọn cho chủ đề này:** Phân tích tài liệu theo cấu trúc markdown (tiêu đề, danh sách, điều khoản có chữ số) và nhóm các block lại với nhau theo giới hạn tokens để giữ trọn vẹn bối cảnh ngữ nghĩa, đồng thời lọc bỏ các boilerplate lines rác như "xin chào, shopee có thể giúp gì cho bạn?".
 - **Code snippet (nếu custom):**
 ```python
-# Sử dụng trực tiếp FixedSizeChunker có sẵn của dự án
-chunker = FixedSizeChunker(chunk_size=200, overlap=20)
+# Sử dụng StructureAwareChunker tự thiết kế
+chunker = StructureAwareChunker(target_tokens=400, overlap_tokens=60)
 ```
 
 **Thành viên 2 — Nguyễn Thị Trà My**
@@ -90,20 +90,20 @@ chunker = HeadingBasedChunker(chunk_size=200)
 
 | Thành viên | Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
-| Nguyễn Tuấn Hùng | Fixed-Size (size=200, overlap=20) | 5/10 | Cực nhanh, cài đặt đơn giản, các chunk đều đặn. | Mất thông tin ở ranh giới chunk, ngắt câu bất hợp lý. |
+| Nguyễn Tuấn Hùng | Structure-Aware (target_tokens=400) | 7/10 | Bảo toàn hoàn hảo các điều khoản phân cấp và lọc bỏ nhiễu boilerplate. | Số lượng chunk nhỏ (94 chunks) làm giảm độ phủ khi tìm các từ khóa rất nhỏ. |
 | Nguyễn Thị Trà My | Sentence (max_sentences=3) | 6/10 | Giữ trọn vẹn ý nghĩa của câu, không lỗi cấu trúc câu. | Dễ lọt các câu cực ngắn làm loãng context, điểm tương đồng kém. |
 | Bùi Công Hậu | Heading-Based (size=200) | 8/10 | Bảo toàn hoàn hảo cấu trúc tiêu đề lớn, giữ ngữ cảnh cha tốt. | Dễ phát sinh các chunk cụt lủn chỉ có 1-2 ký tự rác. |
 
 ### Kết quả Benchmark & Phân tích Failure của từng thành viên
 
-#### 1. Thành viên 1 — Nguyễn Tuấn Hùng (Fixed-Size Chunker)
-* **Kết quả Benchmark:** 5 / 10 điểm (Chỉ đúng 2/5 câu hỏi do thông tin bị cắt đứt đoạn).
-* **Nhận xét riêng:** Việc chia nhỏ văn bản theo độ dài ký tự cố định (`size=200`) tuy dễ triển khai nhưng làm phá vỡ cấu trúc câu và các danh sách liệt kê chính sách của Shopee.
-* **Bằng chứng Failure Case (Query 1):**
-  * **Query:** Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào?
-  * **Top-1 Chunk nhận được:** `shopee-prohibited-items::chunk_121` ("Người Mua thực hiện thanh toán số tiền mua hàng theo kỳ hạn...").
-  * **Nguyên nhân:** Do cắt ký tự thô cứng, các câu chứa bước quy trình bị vỡ vụn thành nhiều mảnh, làm giảm điểm tương đồng ngữ nghĩa. Kết quả dẫn đến việc Agent lấy nhầm thông tin SPayLater để trả lời cho câu hỏi về quy trình trả hàng.
-  * **Đề xuất sửa đổi:** Tăng kích thước chunk (`size=500`) và tăng `overlap=50` để giảm thiểu việc đứt gãy thông tin ở ranh giới chunk.
+#### 1. Thành viên 1 — Nguyễn Tuấn Hùng (Structure-Aware Chunker)
+* **Kết quả Benchmark:** 7 / 10 điểm (Đúng 3/5 câu hỏi).
+* **Nhận xét riêng:** Chiến lược này giúp nhóm các block điều khoản lớn rất hiệu quả và lọc nhiễu tốt. Tuy nhiên do gom cụm lớn (`target_tokens=400`), các thông tin chi tiết nhỏ có thể bị loãng trong chunk lớn nếu điểm tương đồng trung bình của chunk không đủ cao.
+* **Bằng chứng Failure Case (Query 3):**
+  * **Query:** Người bán bị cấm đăng bán những loại vũ khí nào trên Shopee?
+  * **Top-1 Chunk nhận được:** `shopee-prohibited-items::chunk_39` ("lý Sàn giao dịch TMĐT Shopee Công ty TNHH Shopee giao trách nhiệm cho Ban Quản lý...").
+  * **Nguyên nhân:** Do mock embedding hoặc độ loãng của các từ khóa vũ khí trong chunk lớn, chunk chứa danh sách cấm bán vũ khí cụ thể không lọt vào được Top-1, thay vào đó là một chunk dài quy định trách nhiệm chung của Shopee có độ tương đồng thô cao hơn.
+  * **Đề xuất sửa đổi:** Giảm `target_tokens` xuống `250` để các chunk mang tính chất cụ thể, cô đọng hơn.
 
 #### 2. Thành viên 2 — Nguyễn Thị Trà My (Sentence Chunker)
 * **Kết quả Benchmark:** 6 / 10 điểm (Đúng 3/5 câu hỏi).

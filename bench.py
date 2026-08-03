@@ -20,6 +20,7 @@ from src.chunking import (
     HeadingBasedChunker,
     TableAwareChunker,
     FAQPairChunker,
+    StructureAwareChunker,
 )
 
 # 1. Chọn bộ chia nhỏ (chunker) riêng của thành viên:
@@ -91,7 +92,7 @@ def run_benchmark():
 
     # Cấu hình 3 chiến lược của 3 thành viên
     configs = [
-        ("Nguyễn Tuấn Hùng (Fixed-Size, size=200, overlap=20)", FixedSizeChunker(chunk_size=200, overlap=20)),
+        ("Nguyễn Tuấn Hùng (Structure-Aware, target_tokens=400, overlap_tokens=60)", StructureAwareChunker(target_tokens=400, overlap_tokens=60)),
         ("Nguyễn Thị Trà My (Sentence, max_sentences=3)", SentenceChunker(max_sentences_per_chunk=3)),
         ("Bùi Công Hậu (Heading-Based, size=200)", HeadingBasedChunker(chunk_size=200))
     ]

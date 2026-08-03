@@ -133,49 +133,49 @@ tests/test_solution.py::TestEmbeddingStoreDeleteDocument::test_delete_returns_tr
 
 | Cặp | Câu A | Câu B | Dự đoán | Điểm thực tế | Đúng? |
 |------|-----------|-----------|---------|--------------|-------|
-| 1 | Quy trình trả hàng hoàn tiền trên Shopee | Làm thế nào để yêu cầu trả hàng và nhận lại tiền | Cao | -0.0961 | Sai |
-| 2 | Danh sách sản phẩm cấm đăng bán | Những mặt hàng không được phép bán trên sàn | Cao | 0.1392 | Đúng (Dương) |
-| 3 | SPayLater là phương thức thanh toán trả sau | Thời hạn thanh toán SPayLater là bao lâu | Cao | -0.0433 | Sai |
-| 4 | Thời gian giao hàng của SPX Instant là 1 đến 2 giờ | Hôm nay tôi ăn cơm với thịt kho tàu | Thấp | 0.0771 | Sai |
-| 5 | Người bán bị phạt điểm Sao Quả Tạ khi đăng bán hàng cấm | Điểm phạt Sao Quả Tạ và quy định đăng bán sản phẩm | Cao | -0.0631 | Sai |
+| 1 | Quy trình trả hàng hoàn tiền trên Shopee | Làm thế nào để yêu cầu trả hàng và nhận lại tiền | Cao | 0.5048 | Đúng |
+| 2 | Danh sách sản phẩm cấm đăng bán | Những mặt hàng không được phép bán trên sàn | Cao | 0.6097 | Đúng |
+| 3 | SPayLater là phương thức thanh toán trả sau | Thời hạn thanh toán SPayLater là bao lâu | Cao | 0.6366 | Đúng |
+| 4 | Thời gian giao hàng của SPX Instant là 1 đến 2 giờ | Hôm nay tôi ăn cơm với thịt kho tàu | Thấp | 0.0671 | Đúng |
+| 5 | Người bán bị phạt điểm Sao Quả Tạ khi đăng bán hàng cấm | Điểm phạt Sao Quả Tạ và quy định đăng bán sản phẩm | Cao | 0.7996 | Đúng |
 
 **Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn ý nghĩa?**
-> Kết quả bất ngờ nhất là Cặp 1 và Cặp 3 (được người dùng dự đoán là tương quan ngữ nghĩa cao) lại có độ tương tự cosine âm, trong khi Cặp 4 hoàn toàn không liên quan lại có điểm dương (0.0771). 
-> Điều này xảy ra do chúng ta đang sử dụng hàm băm Mock Embedding (`_mock_embed`) để tạo vector thay vì mô hình học máy thực tế. Mock embedding chỉ thực hiện băm và đếm ký tự thô nên hoàn toàn không thể hiểu ngữ nghĩa của từ. Trong thực tế, các mô hình embedding thật (như SBERT) sẽ ánh xạ các từ đồng nghĩa vào gần nhau hơn và cho điểm số phản ánh chính xác ngữ nghĩa của con người.
+> Kết quả các cặp câu hỏi không còn gây bất ngờ nữa khi chúng ta chuyển sang dùng mô hình nhúng thực tế `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`. Tất cả 5 cặp dự đoán đều khớp hoàn toàn với thực tế (Đúng cả 5).
+> Điều này minh chứng rằng một mô hình embedding thực tế học được mối quan hệ ngữ nghĩa sâu sắc giữa các từ ngữ (semantic representation), ánh xạ các cụm từ đồng nghĩa ("trả tiền", "hoàn tiền", "không được phép bán", "cấm đăng bán") vào các vector có góc nhỏ với nhau (độ tương đồng Cosine cao ~ 0.5 - 0.8), trong khi các câu hoàn toàn lạc đề ("giao hàng hỏa tốc" vs "ăn cơm thịt kho") có độ tương đồng cực kỳ thấp sát 0.0.
 
 ---
 
 ## 5. Kết quả truy xuất của tôi (Competition Results) — Cá nhân (10 điểm)
 
-Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân của bạn trong gói `src` với cấu hình chiến lược `Heading-Based Chunker (size=200)` sử dụng `MockEmbedder`.
+Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân của bạn trong gói `src` với cấu hình chiến lược `Heading-Based Chunker (size=200)` sử dụng mô hình nhúng cục bộ `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`.
 
 | # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? (Relevant) | Câu trả lời của Agent (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào? | `shopee-returns-guide::chunk_62`: [# Quy trình Trả hàng Hoàn tiền Shopee] iii. Hạn mức còn lại của tháng trước... | 0.4996 | Không (Nói về hạn mức hoàn trả thay vì các bước quy trình) | [Agent Answer] Dựa vào tài liệu Shopee: [# Quy trình Trả hàng...] |
-| 2 | Thời gian tối đa để người mua gửi yêu cầu trả hàng hoàn tiền đối với thực phẩm tươi sống là bao lâu? | `shopee-prohibited-items::chunk_291`: [# Danh sách sản phẩm cấm đăng bán Shopee] người tiêu dùng (nếu có)... | 0.3200 | Không (Nói về người tiêu dùng thay vì thời gian trả hàng thực phẩm) | [Agent Answer] Dựa vào tài liệu Shopee: [# Danh sách sản phẩm...] |
-| 3 | Người bán bị cấm đăng bán những loại vũ khí nào trên Shopee? | `shopee-prohibited-items::chunk_82`: Đối với Sản phẩm, dịch vụ do Shopee bán trực tiếp, bảo hành thực hiện... | 0.4072 | Không (Nói về bảo hành sản phẩm thay vì danh mục vũ khí cấm) | [Agent Answer] Dựa vào tài liệu Shopee: Đối với Sản phẩm... |
-| 4 | Người mua có thể sử dụng phương thức thanh toán trả sau SPayLater của Shopee như thế nào? | `shopee-returns-guide::chunk_42`: [# Quy trình Trả hàng Hoàn tiền Shopee] b... | 0.4247 | Không (Chỉ chứa ký tự "b", bị cắt cụt do kích thước nhỏ) | [Agent Answer] Dựa vào tài liệu Shopee: [# Quy trình Trả hàng...] |
-| 5 | Quy định thời gian xử lý khiếu nại Trả hàng/Hoàn tiền cho người bán là bao lâu? | `shopee-returns-handling-time::chunk_142`: [# Quy định thời gian xử lý Trả hàng Hoàn tiền Shopee] iv. Lưu ý: Người Bán cần giữ vận đơn... | 0.2917 | Có (Nêu rõ quy định lưu chứng từ khiếu nại của người bán) | [Agent Answer] Dựa vào tài liệu Shopee: [# Quy định thời gian...] |
+| 1 | Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào? | `shopee-returns-guide::chunk_135`: [# Quy trình Trả hàng Hoàn tiền Shopee] với Sản Phẩm Hoàn Trả.... | 0.8789 | Có (Một phần, thuộc tài liệu quy trình nhưng chưa chi tiết các bước) | [Agent Answer] Dựa vào tài liệu Shopee: [# Quy trình Trả hàng...] |
+| 2 | Thời gian tối đa để người mua gửi yêu cầu trả hàng hoàn tiền đối với thực phẩm tươi sống là bao lâu? | `shopee-returns-guide::chunk_28`: Riêng đối với các Sản Phẩm là thực phẩm tươi sống và đông lạnh, Người Mua cần gửi yêu cầu... | 0.7798 | Có (Chính xác, chỉ ra mốc thời gian 24 giờ) | [Agent Answer] Dựa vào tài liệu Shopee: Riêng đối với các Sản Phẩm... |
+| 3 | Người bán bị cấm đăng bán những loại vũ khí nào trên Shopee? | `shopee-prohibited-items::chunk_336`: [# Danh sách sản phẩm cấm đăng bán Shopee] - Các phụ kiện súng bên trong như: đạn, băng đạn... | 0.8339 | Có (Chính xác, liệt kê súng và phụ kiện súng bị cấm) | [Agent Answer] Dựa vào tài liệu Shopee: [# Danh sách sản phẩm...] |
+| 4 | Người mua có thể sử dụng phương thức thanh toán trả sau SPayLater của Shopee như thế nào? | `shopee-returns-guide::chunk_93`: [# Quy trình Trả hàng Hoàn tiền Shopee] trả... | 0.8354 | Không (Bị cụt do chunk quá nhỏ, chỉ chứa chữ "trả") | [Agent Answer] Dựa vào tài liệu Shopee: [# Quy trình Trả hàng...] |
+| 5 | Quy định thời gian xử lý khiếu nại Trả hàng/Hoàn tiền cho người bán là bao lâu? | `shopee-returns-handling-time::chunk_125`: [# Quy định thời gian xử lý Trả hàng Hoàn tiền Shopee] 2. Thời gian xử lý khiếu nại:... | 0.8113 | Có (Chính xác tài liệu quy định thời hạn xử lý của người bán) | [Agent Answer] Dựa vào tài liệu Shopee: [# Quy định thời gian...] |
 
-**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 1 / 5
+**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 4 / 5
 
 ### 🔍 Phân tích lỗi RAG (Failure Analysis)
 
 Từ kết quả benchmark trên, tôi ghi nhận các vấn đề chất lượng và lỗi RAG như sau:
 
 #### 1. **Ảnh hưởng của Mô hình nhúng (Embedding Model Impact - Precision)**
-* **Dấu hiệu:** Điểm Cosine Similarity của các câu trả lời nhiễu vẫn rất cao (ví dụ: Quy trình trả hàng nhận được chunk về hạn mức hoàn tiền với điểm `0.4996`).
-* **Nguyên nhân:** MockEmbedder sử dụng hàm băm ký tự thô để tạo vector ngẫu nhiên cố định (deterministic random). Mô hình này hoàn toàn không có khả năng biểu diễn ngữ nghĩa. Khi truy vấn, hệ thống chỉ so sánh chuỗi thô dẫn đến việc chọn các chunk không liên quan làm Top-1.
-* **Đề xuất:** Cần chuyển đổi sang mô hình nhúng thật (`local` hoặc `openai`) để thu được vector biểu diễn không gian ngữ nghĩa thật.
+* **Dấu hiệu:** Điểm Cosine Similarity của các câu trả lời đúng tăng lên rất cao (đều từ `0.77` đến `0.87`).
+* **Nguyên nhân:** Khác biệt hoàn toàn so với MockEmbedder, mô hình nhúng multilingual thật đã ánh xạ chính xác ý nghĩa câu hỏi lên các phần tài liệu chứa câu trả lời tương ứng, giúp kéo các tài liệu liên quan thực sự lên Top-1.
+* **Đề xuất:** Luôn sử dụng mô hình nhúng học máy thực tế (như MiniLM hoặc OpenAI) trong môi trường sản xuất.
 
 #### 2. **Ảnh hưởng của bộ lọc Metadata (Metadata Utility)**
-* **Dấu hiệu:** Ở Query 3 và Query 5, việc bật bộ lọc `customer_role` đã giúp loại trừ toàn bộ các tài liệu lạc đề. Ví dụ ở Query 5, bộ lọc `{"customer_role": "both"}` đã loại bỏ các tài liệu về chính sách trả hàng của người mua và giữ lại tài liệu chính xác về thời gian xử lý của người bán (`shopee-returns-handling-time`).
-* **Đánh giá:** Metadata filter hoạt động hoàn hảo dưới dạng Pre-filtering, giúp khoanh vùng tài liệu trước khi tính tương đồng, nâng cao độ chính xác đáng kể.
+* **Dấu hiệu:** Bộ lọc `customer_role` lọc trước (Pre-filtering) vô cùng hiệu quả. Ví dụ ở Query 3, việc lọc chỉ tìm kiếm trong tài liệu dành cho `seller` giúp lọc sạch các tài liệu Shopee Mall hay các bước gửi trả hàng của buyer, thu hẹp phạm vi chính xác vào danh mục cấm bán của seller.
+* **Đánh giá:** Metadata filtering là bắt buộc để giải quyết bài toán trùng lặp từ khóa liên vai trò (buyer vs seller).
 
 #### 3. **Độ mạch lạc và lỗi ngắt đoạn (Chunk Coherence - Failure Case tiêu biểu ở Query 4)**
-* **Bằng chứng từ Top-k:** Chunk có ID `shopee-returns-guide::chunk_42` trả về nội dung chỉ có ký tự `"b"`.
-* **Nguyên nhân:** Kích thước `chunk_size=200` là quá nhỏ đối với tài liệu chính sách tiếng Việt chứa nhiều đề mục phân cấp thụt lề thụp dòng. Heading-Based Chunker khi cắt đệ quy các phần quá nhỏ đã bẻ gãy cấu trúc câu, tạo ra các chunk vô nghĩa chỉ chứa một ký tự hoặc một từ nối.
-* **Đề xuất thay đổi:** Tăng `chunk_size` lên `500` ký tự, và đặt `overlap=50` để đảm bảo mỗi chunk tối thiểu phải chứa ít nhất 1 câu hoàn chỉnh có nghĩa.
+* **Bằng chứng từ Top-k:** Chunk `shopee-returns-guide::chunk_93` chỉ chứa duy nhất chữ `"trả..."` làm giảm tính mạch lạc của Agent.
+* **Nguyên nhân:** Mặc dù dùng model nhúng xịn, nhưng do cấu trúc chunking `Heading-Based` cắt đệ quy với size quá nhỏ (`chunk_size=200`), một số phân đoạn con bị cắt vụn thành các từ vô nghĩa. Do mô hình nhúng nhạy cảm với từ khóa "trả", chunk rác này bị kéo lên Top-1.
+* **Đề xuất thay đổi:** Cần nâng `chunk_size` tối thiểu lên `500` ký tự hoặc sử dụng bộ chia theo câu (Sentence-based) kết hợp đính kèm tiêu đề để đảm bảo tính toàn vẹn thông tin.
 
 ---
 

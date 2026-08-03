@@ -13,12 +13,31 @@ from src.embeddings import (
     OpenAIEmbedder,
     _mock_embed,
 )
-from src.chunking import RecursiveChunker
+from src.chunking import (
+    RecursiveChunker,
+    HeadingBasedChunker,
+    TableAwareChunker,
+    FAQPairChunker,
+)
 
-# 1. Chọn bộ chia nhỏ (chunker) riêng của thành viên
-# Thử nghiệm cấu hình chunk_size=400 theo hướng dẫn của Codelab
-CHUNKER_STRATEGY = "Recursive Chunker (size=400)"
-MY_CHUNKER = RecursiveChunker(chunk_size=400)
+# 1. Chọn bộ chia nhỏ (chunker) riêng của thành viên:
+# Các lựa chọn: "recursive" | "heading" | "table_aware" | "faq_pair"
+STRATEGY_OPTION = "heading"  # Thay đổi thành "heading", "table_aware", hoặc "faq_pair" để chạy test
+CHUNK_SIZE = 200
+
+if STRATEGY_OPTION == "heading":
+    CHUNKER_STRATEGY = f"Heading-Based Chunker (size={CHUNK_SIZE})"
+    MY_CHUNKER = HeadingBasedChunker(chunk_size=CHUNK_SIZE)
+elif STRATEGY_OPTION == "table_aware":
+    CHUNKER_STRATEGY = f"Table-Aware Chunker (size={CHUNK_SIZE})"
+    MY_CHUNKER = TableAwareChunker(chunk_size=CHUNK_SIZE)
+elif STRATEGY_OPTION == "faq_pair":
+    CHUNKER_STRATEGY = f"FAQ-Pair Chunker (size={CHUNK_SIZE})"
+    MY_CHUNKER = FAQPairChunker(chunk_size=CHUNK_SIZE)
+else:
+    CHUNKER_STRATEGY = f"Recursive Chunker (size={CHUNK_SIZE})"
+    MY_CHUNKER = RecursiveChunker(chunk_size=CHUNK_SIZE)
+
 DATA_DIR = "data/k4_ecommerce"
 
 
@@ -82,24 +101,36 @@ def run_benchmark():
     # Chạy và in ra kết quả
     for idx, (q, meta_filter) in enumerate(queries, 1):
         print(f"\nQUERY {idx}: {q}")
-        print(f"Bộ lọc metadata: {meta_filter}")
         
-        # Tìm kiếm
-        if meta_filter:
-            results = store.search_with_filter(q, top_k=3, metadata_filter=meta_filter)
-        else:
-            results = store.search(q, top_k=3)
-            
-        print("Top-3 Kết quả truy xuất:")
-        for rank, r in enumerate(results, 1):
+        # 1. Chạy không có bộ lọc (Unfiltered Search)
+        unfiltered_results = store.search(q, top_k=3)
+        print("--- KẾT QUẢ KHÔNG CÓ BỘ LỌC (UNFILTERED) ---")
+        for rank, r in enumerate(unfiltered_results, 1):
             source = r["metadata"].get("source", "N/A")
             preview = r["content"][:120].replace('\n', ' ').strip()
             print(f"  [{rank}] Score: {r['score']:.4f} | ID: {r['id']} | Source: {source}")
             print(f"      Nội dung: {preview}...")
+        unfiltered_ans = agent.answer(q, top_k=3, metadata_filter=None)
+        print(f"  => Phản hồi Agent (Không lọc): {unfiltered_ans}")
+        
+        # 2. Chạy có bộ lọc (Filtered Search) nếu có khai báo bộ lọc
+        if meta_filter:
+            print(f"\n--- KẾT QUẢ CÓ BỘ LỌC METADATA {meta_filter} (FILTERED) ---")
+            filtered_results = store.search_with_filter(q, top_k=3, metadata_filter=meta_filter)
+            for rank, r in enumerate(filtered_results, 1):
+                source = r["metadata"].get("source", "N/A")
+                preview = r["content"][:120].replace('\n', ' ').strip()
+                print(f"  [{rank}] Score: {r['score']:.4f} | ID: {r['id']} | Source: {source}")
+                print(f"      Nội dung: {preview}...")
+            filtered_ans = agent.answer(q, top_k=3, metadata_filter=meta_filter)
+            print(f"  => Phản hồi Agent (Có lọc): {filtered_ans}")
             
-        # Câu trả lời của Agent
-        ans = agent.answer(q, top_k=3, metadata_filter=meta_filter)
-        print(f"Agent Response: {ans}")
+            # Phân tích so sánh A/B
+            if unfiltered_results and filtered_results:
+                if unfiltered_results[0]["id"] == filtered_results[0]["id"]:
+                    print("\n  [A/B Analysis] Kết quả lọc giống hệt không lọc ở vị trí Top-1.")
+                else:
+                    print(f"\n  [A/B Analysis] Lọc metadata ĐÃ THAY ĐỔI Top-1 từ '{unfiltered_results[0]['id']}' sang '{filtered_results[0]['id']}'!")
         print("-" * 60)
 
 

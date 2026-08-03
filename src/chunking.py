@@ -126,6 +126,120 @@ class RecursiveChunker:
         return chunks
 
 
+class HeadingBasedChunker:
+    """
+    Split text by Markdown headings (# , ## , ### ).
+    If a section is larger than chunk_size, fallback to RecursiveChunker but
+    prepend the section heading to each sub-chunk to preserve context.
+    """
+
+    def __init__(self, chunk_size: int = 500) -> None:
+        self.chunk_size = chunk_size
+        self.fallback_chunker = RecursiveChunker(chunk_size=chunk_size)
+
+    def chunk(self, text: str) -> list[str]:
+        if not text:
+            return []
+        # Split by headings, keeping the heading header in each part
+        parts = re.split(r"(?=\n#+\s)", "\n" + text)
+        chunks = []
+        for part in parts:
+            part = part.strip()
+            if not part:
+                continue
+
+            # Extract heading title if it starts with #
+            heading_match = re.match(r"^(#+\s+[^\n]+)", part)
+            heading_prefix = ""
+            if heading_match:
+                heading_prefix = f"[{heading_match.group(1).strip()}] "
+
+            if len(part) <= self.chunk_size:
+                chunks.append(part)
+            else:
+                # Split sub-parts but prepend heading prefix to keep context
+                sub_parts = self.fallback_chunker.chunk(part)
+                for sub in sub_parts:
+                    sub = sub.strip()
+                    if not sub:
+                        continue
+                    # Avoid doubling prefix if sub-chunk already has it
+                    if heading_prefix and not sub.startswith("[#"):
+                        candidate = heading_prefix + sub
+                        if len(candidate) <= self.chunk_size:
+                            chunks.append(candidate)
+                        else:
+                            chunks.append(sub)
+                    else:
+                        chunks.append(sub)
+        return chunks
+
+
+class TableAwareChunker:
+    """
+    Identify Markdown tables and keep them intact as a single chunk.
+    Non-table segments are chunked using RecursiveChunker.
+    """
+
+    def __init__(self, chunk_size: int = 500) -> None:
+        self.chunk_size = chunk_size
+        self.fallback_chunker = RecursiveChunker(chunk_size=chunk_size)
+
+    def chunk(self, text: str) -> list[str]:
+        if not text:
+            return []
+        # Regex to find Markdown tables
+        table_pattern = r"(\n\|[^\n]+\n\|[\s\-\:|]+\n(?:\|[^\n]+\n?)+)"
+        parts = re.split(table_pattern, text)
+        chunks = []
+        for part in parts:
+            if not part.strip():
+                continue
+            # If it is a table (starts with |)
+            if part.strip().startswith("|"):
+                chunks.append(part.strip())
+            else:
+                chunks.extend(self.fallback_chunker.chunk(part))
+        return chunks
+
+
+class FAQPairChunker:
+    """
+    Split text into FAQ (Question/Answer) pairs.
+    Identifies patterns like Q: / A: or Hỏi: / Đáp: or Câu hỏi: / Trả lời:.
+    """
+
+    def __init__(self, chunk_size: int = 500) -> None:
+        self.chunk_size = chunk_size
+        self.fallback_chunker = RecursiveChunker(chunk_size=chunk_size)
+
+    def chunk(self, text: str) -> list[str]:
+        if not text:
+            return []
+        # Regex to split on question starts: e.g. "Q:", "Hỏi:", "Câu hỏi:"
+        q_patterns = r"(?i)\n(?:Q|Hỏi|Câu hỏi|Câu\s+\d+)\s*:"
+        parts = re.split(q_patterns, "\n" + text)
+        chunks = []
+        first_part = parts[0].strip()
+        if first_part and not re.match(q_patterns, first_part):
+            # Non-FAQ preamble
+            chunks.extend(self.fallback_chunker.chunk(first_part))
+            parts = parts[1:]
+
+        matches = re.findall(q_patterns, "\n" + text)
+        for i, part in enumerate(parts):
+            part = part.strip()
+            if not part:
+                continue
+            prefix = matches[i].strip() if i < len(matches) else "Hỏi:"
+            faq_block = f"{prefix} {part}"
+            if len(faq_block) <= self.chunk_size:
+                chunks.append(faq_block)
+            else:
+                chunks.extend(self.fallback_chunker.chunk(faq_block))
+        return chunks
+
+
 def _dot(a: list[float], b: list[float]) -> float:
     return sum(x * y for x, y in zip(a, b))
 

@@ -147,17 +147,37 @@ tests/test_solution.py::TestEmbeddingStoreDeleteDocument::test_delete_returns_tr
 
 ## 5. Kết quả truy xuất của tôi (Competition Results) — Cá nhân (10 điểm)
 
-Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân của bạn trong gói `src`. 
+Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân của bạn trong gói `src` với cấu hình chiến lược `Heading-Based Chunker (size=200)` sử dụng `MockEmbedder`.
 
 | # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? (Relevant) | Câu trả lời của Agent (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào? | Cấm: Súng (gồm cả đồ chơi giống súng), kiếm, mác, lê... | 0.3332 | Có (chứa thông tin trong file) | [Agent Answer] Dựa vào tài liệu Shopee: - Súng hơi nước... |
-| 2 | Thời gian tối đa để người mua gửi yêu cầu trả hàng hoàn tiền đối với thực phẩm tươi sống là bao lâu? | Quy định cân nặng và thể tích quy đổi của đơn vị vận chuyển | 0.3443 | Có | [Agent Answer] Dựa vào tài liệu Shopee: b. Theo quy định... |
-| 3 | Người bán bị cấm đăng bán những loại vũ khí nào trên Shopee? | Section IX: Quản lý thông tin xấu trên Shopee | 0.3350 | Có | [Agent Answer] Dựa vào tài liệu Shopee: IX. Quản lý thông tin xấu... |
-| 4 | Người mua có thể sử dụng phương thức thanh toán trả sau SPayLater của Shopee như thế nào? | Người mua hạng vàng và kim cương trả hàng không giới hạn hạn mức | 0.2664 | Có | [Agent Answer] Dựa vào tài liệu Shopee: Người mua hợp lệ... |
-| 5 | Quy định thời gian xử lý khiếu nại Trả hàng/Hoàn tiền cho người bán là bao lâu? | Trên bao bì bưu kiện phải ghi đầy đủ thông tin gửi hàng... | 0.2039 | Có | [Agent Answer] Dựa vào tài liệu Shopee: d. Trên bao bì... |
+| 1 | Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào? | `shopee-returns-guide::chunk_62`: [# Quy trình Trả hàng Hoàn tiền Shopee] iii. Hạn mức còn lại của tháng trước... | 0.4996 | Không (Nói về hạn mức hoàn trả thay vì các bước quy trình) | [Agent Answer] Dựa vào tài liệu Shopee: [# Quy trình Trả hàng...] |
+| 2 | Thời gian tối đa để người mua gửi yêu cầu trả hàng hoàn tiền đối với thực phẩm tươi sống là bao lâu? | `shopee-prohibited-items::chunk_291`: [# Danh sách sản phẩm cấm đăng bán Shopee] người tiêu dùng (nếu có)... | 0.3200 | Không (Nói về người tiêu dùng thay vì thời gian trả hàng thực phẩm) | [Agent Answer] Dựa vào tài liệu Shopee: [# Danh sách sản phẩm...] |
+| 3 | Người bán bị cấm đăng bán những loại vũ khí nào trên Shopee? | `shopee-prohibited-items::chunk_82`: Đối với Sản phẩm, dịch vụ do Shopee bán trực tiếp, bảo hành thực hiện... | 0.4072 | Không (Nói về bảo hành sản phẩm thay vì danh mục vũ khí cấm) | [Agent Answer] Dựa vào tài liệu Shopee: Đối với Sản phẩm... |
+| 4 | Người mua có thể sử dụng phương thức thanh toán trả sau SPayLater của Shopee như thế nào? | `shopee-returns-guide::chunk_42`: [# Quy trình Trả hàng Hoàn tiền Shopee] b... | 0.4247 | Không (Chỉ chứa ký tự "b", bị cắt cụt do kích thước nhỏ) | [Agent Answer] Dựa vào tài liệu Shopee: [# Quy trình Trả hàng...] |
+| 5 | Quy định thời gian xử lý khiếu nại Trả hàng/Hoàn tiền cho người bán là bao lâu? | `shopee-returns-handling-time::chunk_142`: [# Quy định thời gian xử lý Trả hàng Hoàn tiền Shopee] iv. Lưu ý: Người Bán cần giữ vận đơn... | 0.2917 | Có (Nêu rõ quy định lưu chứng từ khiếu nại của người bán) | [Agent Answer] Dựa vào tài liệu Shopee: [# Quy định thời gian...] |
 
-**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 5 / 5
+**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 1 / 5
+
+### 🔍 Phân tích lỗi RAG (Failure Analysis)
+
+Từ kết quả benchmark trên, tôi ghi nhận các vấn đề chất lượng và lỗi RAG như sau:
+
+#### 1. **Ảnh hưởng của Mô hình nhúng (Embedding Model Impact - Precision)**
+* **Dấu hiệu:** Điểm Cosine Similarity của các câu trả lời nhiễu vẫn rất cao (ví dụ: Quy trình trả hàng nhận được chunk về hạn mức hoàn tiền với điểm `0.4996`).
+* **Nguyên nhân:** MockEmbedder sử dụng hàm băm ký tự thô để tạo vector ngẫu nhiên cố định (deterministic random). Mô hình này hoàn toàn không có khả năng biểu diễn ngữ nghĩa. Khi truy vấn, hệ thống chỉ so sánh chuỗi thô dẫn đến việc chọn các chunk không liên quan làm Top-1.
+* **Đề xuất:** Cần chuyển đổi sang mô hình nhúng thật (`local` hoặc `openai`) để thu được vector biểu diễn không gian ngữ nghĩa thật.
+
+#### 2. **Ảnh hưởng của bộ lọc Metadata (Metadata Utility)**
+* **Dấu hiệu:** Ở Query 3 và Query 5, việc bật bộ lọc `customer_role` đã giúp loại trừ toàn bộ các tài liệu lạc đề. Ví dụ ở Query 5, bộ lọc `{"customer_role": "both"}` đã loại bỏ các tài liệu về chính sách trả hàng của người mua và giữ lại tài liệu chính xác về thời gian xử lý của người bán (`shopee-returns-handling-time`).
+* **Đánh giá:** Metadata filter hoạt động hoàn hảo dưới dạng Pre-filtering, giúp khoanh vùng tài liệu trước khi tính tương đồng, nâng cao độ chính xác đáng kể.
+
+#### 3. **Độ mạch lạc và lỗi ngắt đoạn (Chunk Coherence - Failure Case tiêu biểu ở Query 4)**
+* **Bằng chứng từ Top-k:** Chunk có ID `shopee-returns-guide::chunk_42` trả về nội dung chỉ có ký tự `"b"`.
+* **Nguyên nhân:** Kích thước `chunk_size=200` là quá nhỏ đối với tài liệu chính sách tiếng Việt chứa nhiều đề mục phân cấp thụt lề thụp dòng. Heading-Based Chunker khi cắt đệ quy các phần quá nhỏ đã bẻ gãy cấu trúc câu, tạo ra các chunk vô nghĩa chỉ chứa một ký tự hoặc một từ nối.
+* **Đề xuất thay đổi:** Tăng `chunk_size` lên `500` ký tự, và đặt `overlap=50` để đảm bảo mỗi chunk tối thiểu phải chứa ít nhất 1 câu hoàn chỉnh có nghĩa.
+
+---
 
 **Điều hay nhất tôi học được từ thành viên khác / nhóm khác (qua demo):**
 > Tôi học được từ các nhóm khác cách họ tối ưu hóa việc phân tách văn bản bằng cách tạo thêm các trường metadata phụ như `subsection_header` và `importance_score` để giúp tăng cường độ ưu tiên cho các chương/phần quan trọng trong tài liệu khi thực hiện truy xuất.

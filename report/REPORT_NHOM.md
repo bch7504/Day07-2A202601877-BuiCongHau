@@ -1,7 +1,7 @@
 # Báo Cáo Nhóm — Lab 7: Embedding & Vector Store
 
 **Nhóm:** khongcoten
-**Thành viên:** Bùi Công Hậu
+**Thành viên:** Bùi Công Hậu, Nguyễn Tuấn Hùng, Nguyễn Thị Trà My
 **Ngày:** 2026-08-03
 
 > **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_CANHAN.md`. Chi tiết thang điểm: `docs/SCORING.md`.
@@ -59,7 +59,7 @@ Chạy `ChunkingStrategyComparator().compare()` trên tài liệu `shopee-spayla
 
 ### Chiến lược của từng thành viên
 
-**Thành viên 1 — Nguyễn Văn A**
+**Thành viên 1 — Nguyễn Tuấn Hùng**
 - **Loại chiến lược:** FixedSize
 - **Mô tả & lý do chọn cho chủ đề này:** Sử dụng FixedSizeChunker cắt cứng văn bản theo kích thước ký tự cố định và có độ gối đầu (overlap). Đây là cách tiếp cận đơn giản nhất để làm mốc baseline so sánh.
 - **Code snippet (nếu custom):**
@@ -68,7 +68,7 @@ Chạy `ChunkingStrategyComparator().compare()` trên tài liệu `shopee-spayla
 chunker = FixedSizeChunker(chunk_size=200, overlap=20)
 ```
 
-**Thành viên 2 — Trần Thị B**
+**Thành viên 2 — Nguyễn Thị Trà My**
 - **Loại chiến lược:** Sentence
 - **Mô tả & lý do chọn:** Chia văn bản theo đơn vị câu trọn vẹn (SentenceChunker) để đảm bảo không một câu nào bị cắt làm đôi ở giữa, giúp giữ ngữ nghĩa câu tốt nhất cho các tài liệu chính sách ngắn.
 - **Code snippet (nếu custom):**
@@ -77,25 +77,25 @@ chunker = FixedSizeChunker(chunk_size=200, overlap=20)
 chunker = SentenceChunker(max_sentences_per_chunk=3)
 ```
 
-**Thành viên 3 — Lê Văn C**
-- **Loại chiến lược:** Recursive
-- **Mô tả & lý do chọn:** Chia nhỏ văn bản đệ quy (RecursiveChunker) dựa trên danh sách dấu câu ưu tiên từ đoạn văn (`\n\n`), dòng (`\n`), câu (`. `) xuống từ (` `). Điều này giúp bảo toàn được cấu trúc phân cấp (headings, bullet points) của các tài liệu hướng dẫn Shopee vốn chứa nhiều danh sách liệt kê.
+**Thành viên 3 — Bùi Công Hậu**
+- **Loại chiến lược:** Heading-Based (size=200)
+- **Mô tả & lý do chọn:** Tách văn bản tại các tiêu đề Markdown lớn, sau đó chia đệ quy cho các phần quá dài nhưng tự động đính kèm tiêu đề gốc của section vào đầu các chunk con. Điều này giúp bảo toàn được cấu trúc phân cấp điều khoản Shopee mà không làm mất ngữ cảnh tiêu đề cha.
 - **Code snippet (nếu custom):**
 ```python
-# Sử dụng RecursiveChunker đệ quy thông minh
-chunker = RecursiveChunker(chunk_size=200)
+# Sử dụng HeadingBasedChunker tự phát triển
+chunker = HeadingBasedChunker(chunk_size=200)
 ```
 
 ### So Sánh Giữa Các Thành Viên
 
 | Thành viên | Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
-| Nguyễn Văn A | FixedSize | 6/10 | Cực nhanh, cài đặt đơn giản, các chunk đều đặn. | Mất thông tin ở ranh giới chunk, ngắt câu bất hợp lý. |
-| Trần Thị B | Sentence | 8/10 | Giữ trọn vẹn ý nghĩa của câu, không lỗi cấu trúc câu. | Khó kiểm soát độ dài ký tự của chunk nếu có câu quá dài. |
-| Lê Văn C | Recursive | 9/10 | Bảo toàn hoàn hảo cấu trúc tài liệu, headings và danh sách. | Giải thuật đệ quy phức tạp hơn, tạo ra nhiều chunk nhỏ. |
+| Nguyễn Tuấn Hùng | Fixed-Size (size=200, overlap=20) | 5/10 | Cực nhanh, cài đặt đơn giản, các chunk đều đặn. | Mất thông tin ở ranh giới chunk, ngắt câu bất hợp lý. |
+| Nguyễn Thị Trà My | Sentence (max_sentences=3) | 6/10 | Giữ trọn vẹn ý nghĩa của câu, không lỗi cấu trúc câu. | Dễ lọt các câu cực ngắn làm loãng context, điểm tương đồng kém. |
+| Bùi Công Hậu | Heading-Based (size=200) | 8/10 | Bảo toàn hoàn hảo cấu trúc tiêu đề lớn, giữ ngữ cảnh cha tốt. | Dễ phát sinh các chunk cụt lủn chỉ có 1-2 ký tự rác. |
 
 **Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> Chiến lược `Recursive` là tốt nhất cho các văn bản chính sách thương mại điện tử. Do tài liệu chính sách chứa rất nhiều điều khoản dạng danh sách liệt kê (bullet points, bảng biểu, quy trình nhiều bước), việc cắt đệ quy theo các dấu xuống dòng và dấu câu giúp giữ nguyên cấu trúc phân cấp ngữ nghĩa, tránh việc các mục điều khoản bị phân mảnh rời rạc khiến mô hình bị nhầm lẫn khi trả lời.
+> Chiến lược `Heading-Based` (hoặc `Recursive`) là tốt nhất cho các văn bản chính sách thương mại điện tử. Do tài liệu chính sách chứa rất nhiều điều khoản dạng danh sách liệt kê phân cấp, việc cắt theo tiêu đề giúp giữ nguyên cấu trúc ngữ nghĩa, đồng thời đính kèm tiêu đề cha giúp các chunk con không bị mồ côi ngữ cảnh khi tính điểm tương đồng ngữ nghĩa.
 
 ---
 

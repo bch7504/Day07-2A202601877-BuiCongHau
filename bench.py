@@ -14,6 +14,8 @@ from src.embeddings import (
     _mock_embed,
 )
 from src.chunking import (
+    FixedSizeChunker,
+    SentenceChunker,
     RecursiveChunker,
     HeadingBasedChunker,
     TableAwareChunker,
@@ -21,11 +23,17 @@ from src.chunking import (
 )
 
 # 1. Chọn bộ chia nhỏ (chunker) riêng của thành viên:
-# Các lựa chọn: "recursive" | "heading" | "table_aware" | "faq_pair"
-STRATEGY_OPTION = "heading"  # Thay đổi thành "heading", "table_aware", hoặc "faq_pair" để chạy test
+# Các lựa chọn: "fixed_size" | "sentence" | "recursive" | "heading" | "table_aware" | "faq_pair"
+STRATEGY_OPTION = "sentence"  # Thay đổi chiến lược ở đây để chạy benchmark
 CHUNK_SIZE = 200
 
-if STRATEGY_OPTION == "heading":
+if STRATEGY_OPTION == "fixed_size":
+    CHUNKER_STRATEGY = f"Fixed-Size Chunker (size={CHUNK_SIZE}, overlap=20)"
+    MY_CHUNKER = FixedSizeChunker(chunk_size=CHUNK_SIZE, overlap=20)
+elif STRATEGY_OPTION == "sentence":
+    CHUNKER_STRATEGY = "Sentence Chunker (max_sentences=3)"
+    MY_CHUNKER = SentenceChunker(max_sentences_per_chunk=3)
+elif STRATEGY_OPTION == "heading":
     CHUNKER_STRATEGY = f"Heading-Based Chunker (size={CHUNK_SIZE})"
     MY_CHUNKER = HeadingBasedChunker(chunk_size=CHUNK_SIZE)
 elif STRATEGY_OPTION == "table_aware":

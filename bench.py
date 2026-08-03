@@ -1,0 +1,107 @@
+import os
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
+
+from ingest import build_knowledge_base
+from src.agent import KnowledgeBaseAgent
+from src.embeddings import (
+    EMBEDDING_PROVIDER_ENV,
+    LOCAL_EMBEDDING_MODEL,
+    OPENAI_EMBEDDING_MODEL,
+    LocalEmbedder,
+    OpenAIEmbedder,
+    _mock_embed,
+)
+from src.chunking import RecursiveChunker
+
+# 1. Chọn bộ chia nhỏ (chunker) riêng của thành viên
+# Thử nghiệm cấu hình chunk_size=400 theo hướng dẫn của Codelab
+CHUNKER_STRATEGY = "Recursive Chunker (size=400)"
+MY_CHUNKER = RecursiveChunker(chunk_size=400)
+DATA_DIR = "data/k4_ecommerce"
+
+
+def select_embedder():
+    """Chọn mô hình nhúng dựa trên biến môi trường EMBEDDING_PROVIDER."""
+    load_dotenv(override=False)
+    provider = os.getenv(EMBEDDING_PROVIDER_ENV, "mock").strip().lower()
+    if provider == "local":
+        try:
+            return LocalEmbedder(model_name=os.getenv("LOCAL_EMBEDDING_MODEL", LOCAL_EMBEDDING_MODEL))
+        except Exception as e:
+            print(f"Lỗi khởi tạo Local embedder: {e}. Tự động chuyển về mock.")
+            return _mock_embed
+    if provider == "openai":
+        try:
+            return OpenAIEmbedder(model_name=os.getenv("OPENAI_EMBEDDING_MODEL", OPENAI_EMBEDDING_MODEL))
+        except Exception as e:
+            print(f"Lỗi khởi tạo OpenAI embedder: {e}. Tự động chuyển về mock.")
+            return _mock_embed
+    return _mock_embed
+
+
+def mock_llm(prompt: str) -> str:
+    """Hàm LLM giả lập sinh câu trả lời ngắn dựa trên context."""
+    parts = prompt.split("---------------------")
+    if len(parts) >= 3:
+        context = parts[1].strip()
+        lines = [line.strip() for line in context.split("\n") if line.strip()]
+        if lines:
+            return f"[Agent Answer] Dựa vào tài liệu Shopee: {lines[0]} {lines[1] if len(lines) > 1 else ''}"
+    return "[Agent Answer] Không tìm thấy thông tin phù hợp trong tài liệu."
+
+
+def run_benchmark():
+    embedder = select_embedder()
+    backend_name = getattr(embedder, "_backend_name", embedder.__class__.__name__)
+    
+    print("=" * 60)
+    print("RUNNING BENCHMARK EVALUATION (CHECKPOINT 5)")
+    print(f"Chiến lược chunking: {CHUNKER_STRATEGY}")
+    print(f"Mô hình nhúng: {backend_name}")
+    print(f"Thư mục tài liệu: {DATA_DIR}")
+    print("=" * 60)
+
+    # 2. Xây dựng cơ sở tri thức (nạp và chia nhỏ dữ liệu)
+    store = build_knowledge_base(DATA_DIR, embedding_fn=embedder, chunker=MY_CHUNKER)
+    print(f"Đã nạp {store.get_collection_size()} chunks vào EmbeddingStore.")
+    print("-" * 60)
+
+    # 3. Danh sách 5 câu hỏi benchmark chốt của nhóm
+    queries = [
+        ("Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào?", None),
+        ("Thời gian tối đa để người mua gửi yêu cầu trả hàng hoàn tiền đối với thực phẩm tươi sống là bao lâu?", None),
+        ("Người bán bị cấm đăng bán những loại vũ khí nào trên Shopee?", {"customer_role": "seller"}),
+        ("Người mua có thể sử dụng phương thức thanh toán trả sau SPayLater của Shopee như thế nào?", {"customer_role": "buyer"}),
+        ("Quy định thời gian xử lý khiếu nại Trả hàng/Hoàn tiền cho người bán là bao lâu?", {"customer_role": "both"})
+    ]
+
+    agent = KnowledgeBaseAgent(store=store, llm_fn=mock_llm)
+
+    # Chạy và in ra kết quả
+    for idx, (q, meta_filter) in enumerate(queries, 1):
+        print(f"\nQUERY {idx}: {q}")
+        print(f"Bộ lọc metadata: {meta_filter}")
+        
+        # Tìm kiếm
+        if meta_filter:
+            results = store.search_with_filter(q, top_k=3, metadata_filter=meta_filter)
+        else:
+            results = store.search(q, top_k=3)
+            
+        print("Top-3 Kết quả truy xuất:")
+        for rank, r in enumerate(results, 1):
+            source = r["metadata"].get("source", "N/A")
+            preview = r["content"][:120].replace('\n', ' ').strip()
+            print(f"  [{rank}] Score: {r['score']:.4f} | ID: {r['id']} | Source: {source}")
+            print(f"      Nội dung: {preview}...")
+            
+        # Câu trả lời của Agent
+        ans = agent.answer(q, top_k=3, metadata_filter=meta_filter)
+        print(f"Agent Response: {ans}")
+        print("-" * 60)
+
+
+if __name__ == "__main__":
+    run_benchmark()

@@ -23,11 +23,13 @@
 
 | # | Tên tài liệu | Nguồn (Source URL) | Ngày lấy / Phiên bản | Số ký tự | Metadata đã gán |
 |---|--------------|------------|--------------------|----------|-----------------|
-| 1 | Quy trình Trả hàng Hoàn tiền Shopee | `https://help.shopee.vn/portal/4/article/77251?seo=1&utm_source=chatgpt.com` | 2026-08-03 / 2026.1 | 12,238 | `customer_role`: buyer, `category`: returns, `language`: vi |
-| 2 | Hướng dẫn thanh toán SPayLater Shopee | `https://help.shopee.vn/portal/4/article/79233?seo=1&utm_source=chatgpt.com` | 2026-08-03 / 2026.1 | 3,745 | `customer_role`: buyer, `category`: payment, `language`: vi |
-| 3 | Quy định chung về Trả hàng Hoàn tiền của Shopee | `https://help.shopee.vn/portal/4/article/188931-%5BTr%E1%BA%A3-h%C3%A0ng/Ho%C3%A0n-ti%E1%BB%81n%5D-Nh%E1%BB%AFng-quy-%C4%91%E1%BB%8Bnh-chung-v%E1%BB%81-Tr%E1%BA%A3-h%C3%A0ng/Ho%C3%A0n-ti%E1%BB%81n-c%E1%BB%A7a-Shopee?utm_source=chatgpt.com` | 2026-08-03 / 2026.1 | 9,077 | `customer_role`: buyer, `category`: returns, `language`: vi |
-| 4 | Danh sách sản phẩm cấm đăng bán Shopee | `https://help.shopee.vn/portal/4/article/77245?previousPage=other+articles&utm_source=chatgpt.com` | 2026-08-03 / 2026.1 | 103,141 | `customer_role`: seller, `category`: listing, `language`: vi |
-| 5 | Quy định thời gian xử lý Trả hàng Hoàn tiền Shopee | `https://help.shopee.vn/portal/4/article/77250?utm_source=chatgpt.com` | 2026-08-03 / 2026.1 | 17,991 | `customer_role`: both, `category`: returns, `language`: vi |
+| 1 | [Quy trình Trả hàng Hoàn tiền Shopee](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-returns-guide.md) | `https://help.shopee.vn/portal/4/article/77251` | 2026-08-03 / 2026.1 | 26,379 | `customer_role`: buyer, `category`: returns, `language`: vi |
+| 2 | [Hướng dẫn thanh toán SPayLater Shopee](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-spaylater-guide.md) | `https://help.shopee.vn/portal/4/article/79233` | 2026-08-03 / 2026.1 | 3,664 | `customer_role`: buyer, `category`: payment, `language`: vi |
+| 3 | [Quy định chung về Trả hàng Hoàn tiền của Shopee](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-refund-regulations.md) | `https://help.shopee.vn/portal/4/article/188931-%5BTr%E1%BA%A3-h%C3%A0ng/Ho%C3%A0n-ti%E1%BB%81n%5D-Nh%E1%BB%AFng-quy-%C4%91%E1%BB%8Bnh-chung-v%E1%BB%81-Tr%E1%BA%A3-h%C3%A0ng/Ho%C3%A0n-ti%E1%BB%81n-c%E1%BB%A7a-Shopee` | 2026-08-03 / 2026.1 | 9,054 | `customer_role`: buyer, `category`: returns, `language`: vi |
+| 4 | [Danh sách sản phẩm cấm đăng bán Shopee](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-prohibited-items.md) | `https://help.shopee.vn/portal/4/article/77245` | 2026-08-03 / 2026.1 | 103,090 | `customer_role`: seller, `category`: listing, `language`: vi |
+| 5 | [Quy định thời gian xử lý Trả hàng Hoàn tiền Shopee](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-returns-handling-time.md) | `https://help.shopee.vn/portal/4/article/77250` | 2026-08-03 / 2026.1 | 33,223 | `customer_role`: both, `category`: returns, `language`: vi |
+| 6 | [Tiki Hub - Điểm tiếp nhận hàng đổi trả](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/tiki-hub-return-points.md) | `https://hotro.tiki.vn/knowledge-base/post/760-tiki-hub%2d%2d%2dnoi-tiep-nhan-ky-gui-hang-doi-tra-&-bao-hanh` | 2026-08-03 / 2026.1 | 2,905 | `customer_role`: buyer, `category`: returns, `language`: vi |
+| 7 | [Chính sách hậu mãi đổi trả của Tiki](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/tiki-after-sales-policy.md) | `https://hotro.tiki.vn/knowledge-base/post/787-chinh-sach-hau-mai:-doi-moi,-tra-hang-hoan-tien-va-bao-hanh-san-pham` | 2026-08-03 / 2026.1 | 2,970 | `customer_role`: buyer, `category`: returns, `language`: vi |
 
 **Danh sách kiểm tra quản trị dữ liệu (Data governance checklist):**
 - [x] Tập tài liệu (Corpus) chỉ chứa nguồn công khai/được phép dùng và không chứa dữ liệu cá nhân, thông tin đăng nhập hoặc tài liệu nội bộ.
@@ -53,9 +55,9 @@ Chạy `ChunkingStrategyComparator().compare()` trên tài liệu `shopee-spayla
 
 | Tài liệu | Chiến lược (Strategy) | Số lượng Chunk | Độ dài trung bình | Giữ được ngữ cảnh không? |
 |-----------|----------|-------------|------------|-------------------|
-| shopee-spaylater-guide.md | FixedSizeChunker (`fixed_size`) | 13 | 193.46 | Trung bình (Bị cắt ngang từ hoặc câu ở ranh giới chunk) |
-| shopee-spaylater-guide.md | SentenceChunker (`by_sentences`) | 7 | 355.71 | Tốt (Giữ nguyên vẹn toàn bộ câu, tuy nhiên độ dài chunk lớn hơn) |
-| shopee-spaylater-guide.md | RecursiveChunker (`recursive`) | 17 | 146.06 | Rất tốt (Cắt theo cấu trúc đoạn văn bản tự nhiên, bảo toàn ngữ nghĩa) |
+| [shopee-spaylater-guide.md](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-spaylater-guide.md) | FixedSizeChunker (`fixed_size`) | 13 | 193.46 | Trung bình (Bị cắt ngang từ hoặc câu ở ranh giới chunk) |
+| [shopee-spaylater-guide.md](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-spaylater-guide.md) | SentenceChunker (`by_sentences`) | 7 | 355.71 | Tốt (Giữ nguyên vẹn toàn bộ câu, tuy nhiên độ dài chunk lớn hơn) |
+| [shopee-spaylater-guide.md](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-spaylater-guide.md) | RecursiveChunker (`recursive`) | 17 | 146.06 | Rất tốt (Cắt theo cấu trúc đoạn văn bản tự nhiên, bảo toàn ngữ nghĩa) |
 
 ### Chiến lược của từng thành viên
 
@@ -132,13 +134,13 @@ chunker = HeadingBasedChunker(chunk_size=200)
 
 ### Câu hỏi đánh giá & Câu trả lời chuẩn (nhóm thống nhất)
 
-| # | Câu hỏi (Query) | Câu trả lời chuẩn (Gold Answer) | Chunk nào chứa thông tin? |
+| # | Câu hỏi (Query) | Câu trả lời chuẩn (Gold Answer) | Tài liệu chứa thông tin |
 |---|-------|-------------------------------|--------------------------|
-| 1 | Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào? | Gồm: Bấm khiếu nại trong ứng dụng Shopee (Đơn Mua), Bộ phận khiếu nại tiếp nhận xử lý, Xử lý theo chính sách đổi trả hoặc đưa ra cơ quan nhà nước nếu ngoài thẩm quyền. | `shopee-prohibited-items::chunk_106` |
-| 2 | Thời gian tối đa để người mua gửi yêu cầu trả hàng hoàn tiền đối với thực phẩm tươi sống là bao lâu? | Trong vòng 24 giờ kể từ lúc đơn hàng được cập nhật trạng thái 'Giao hàng thành công'. | `shopee-refund-regulations::chunk_30` |
-| 3 | Người bán bị cấm đăng bán những loại vũ khí nào trên Shopee? | Cấm: Súng (gồm cả đồ chơi giống súng), kiếm, mác, lê, dao găm, cung nỏ, hơi cay, dùi cui, tay đấm gấu, linh kiện súng, và dao có lưỡi sắc nhọn (trừ dao bếp). | `shopee-prohibited-items::chunk_125` |
-| 4 | Người mua có thể sử dụng phương thức thanh toán trả sau SPayLater của Shopee như thế nào? | Người mua đặt hàng, chọn phương thức thanh toán SPayLater, chọn kỳ hạn trả sau và thanh toán. Sau khi nhận hàng, người mua trả tiền theo kỳ hạn với Ngân hàng. | `shopee-prohibited-items::chunk_93` |
-| 5 | Quy định thời gian xử lý khiếu nại Trả hàng/Hoàn tiền cho người bán là bao lâu? | Thời hạn phản hồi từ người bán hoặc thời gian xử lý thông thường được nêu trong tài liệu quy định thời gian xử lý. | `shopee-returns-handling-time::chunk_22` |
+| 1 | Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào? | Gồm: Bấm khiếu nại trong ứng dụng Shopee (Đơn Mua), Bộ phận khiếu nại tiếp nhận xử lý, Xử lý theo chính sách đổi trả hoặc đưa ra cơ quan nhà nước nếu ngoài thẩm quyền. | [shopee-returns-guide.md](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-returns-guide.md) |
+| 2 | Thời gian tối đa để người mua gửi yêu cầu trả hàng hoàn tiền đối với thực phẩm tươi sống là bao lâu? | Trong vòng 24 giờ kể từ lúc đơn hàng được cập nhật trạng thái 'Giao hàng thành công'. | [shopee-returns-guide.md](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-returns-guide.md) |
+| 3 | Người bán bị cấm đăng bán những loại vũ khí nào trên Shopee? | Cấm: Súng (gồm cả đồ chơi giống súng), kiếm, mác, lê, dao găm, cung nỏ, hơi cay, dùi cui, tay đấm gấu, linh kiện súng, và dao có lưỡi sắc nhọn (trừ dao bếp). | [shopee-prohibited-items.md](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-prohibited-items.md) |
+| 4 | Người mua có thể sử dụng phương thức thanh toán trả sau SPayLater của Shopee như thế nào? | Người mua đặt hàng, chọn phương thức thanh toán SPayLater, chọn kỳ hạn trả sau và thanh toán. Sau khi nhận hàng, người mua trả tiền theo kỳ hạn với Ngân hàng. | [shopee-spaylater-guide.md](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-spaylater-guide.md) |
+| 5 | Quy định thời gian xử lý khiếu nại Trả hàng/Hoàn tiền cho người bán là bao lâu? | Thời hạn phản hồi từ người bán hoặc thời gian xử lý thông thường được nêu trong tài liệu quy định thời gian xử lý. | [shopee-returns-handling-time.md](file:///d:/vinthucchien/K4-Day07-Data-Foundations/data/k4_ecommerce/shopee-returns-handling-time.md) |
 
 ### Tổng hợp chất lượng truy xuất của nhóm
 

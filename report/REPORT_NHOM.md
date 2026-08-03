@@ -94,8 +94,37 @@ chunker = HeadingBasedChunker(chunk_size=200)
 | Nguyễn Thị Trà My | Sentence (max_sentences=3) | 6/10 | Giữ trọn vẹn ý nghĩa của câu, không lỗi cấu trúc câu. | Dễ lọt các câu cực ngắn làm loãng context, điểm tương đồng kém. |
 | Bùi Công Hậu | Heading-Based (size=200) | 8/10 | Bảo toàn hoàn hảo cấu trúc tiêu đề lớn, giữ ngữ cảnh cha tốt. | Dễ phát sinh các chunk cụt lủn chỉ có 1-2 ký tự rác. |
 
+### Kết quả Benchmark & Phân tích Failure của từng thành viên
+
+#### 1. Thành viên 1 — Nguyễn Tuấn Hùng (Fixed-Size Chunker)
+* **Kết quả Benchmark:** 5 / 10 điểm (Chỉ đúng 2/5 câu hỏi do thông tin bị cắt đứt đoạn).
+* **Nhận xét riêng:** Việc chia nhỏ văn bản theo độ dài ký tự cố định (`size=200`) tuy dễ triển khai nhưng làm phá vỡ cấu trúc câu và các danh sách liệt kê chính sách của Shopee.
+* **Bằng chứng Failure Case (Query 1):**
+  * **Query:** Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào?
+  * **Top-1 Chunk nhận được:** `shopee-prohibited-items::chunk_121` ("Người Mua thực hiện thanh toán số tiền mua hàng theo kỳ hạn...").
+  * **Nguyên nhân:** Do cắt ký tự thô cứng, các câu chứa bước quy trình bị vỡ vụn thành nhiều mảnh, làm giảm điểm tương đồng ngữ nghĩa. Kết quả dẫn đến việc Agent lấy nhầm thông tin SPayLater để trả lời cho câu hỏi về quy trình trả hàng.
+  * **Đề xuất sửa đổi:** Tăng kích thước chunk (`size=500`) và tăng `overlap=50` để giảm thiểu việc đứt gãy thông tin ở ranh giới chunk.
+
+#### 2. Thành viên 2 — Nguyễn Thị Trà My (Sentence Chunker)
+* **Kết quả Benchmark:** 6 / 10 điểm (Đúng 3/5 câu hỏi).
+* **Nhận xét riêng:** Chunker chia theo câu giữ được ngữ nghĩa của từng câu đơn lẻ rất tốt, tuy nhiên khi đứng một mình thì các câu này bị mất đi tiêu đề cha (Context) dẫn đến việc mô hình nhầm lẫn mục đích.
+* **Bằng chứng Failure Case (Query 4):**
+  * **Query:** Người mua có thể sử dụng phương thức thanh toán trả sau SPayLater của Shopee như thế nào?
+  * **Top-1 Chunk nhận được:** `shopee-prohibited-items::chunk_146` ("Sàn giao dịch TMĐT Shopee có quyền áp dụng các biện pháp...").
+  * **Nguyên nhân:** Chunk chỉ chứa câu đơn lẻ về quyền của Shopee, nhưng do chứa các từ khóa chung như "Shopee", "thanh toán" nên điểm Cosine bị đẩy lên cao hơn đoạn mô tả cách sử dụng SPayLater thực sự.
+  * **Đề xuất sửa đổi:** Bổ sung cơ chế đính kèm tiêu đề cha (heading context) vào trước mỗi câu để định vị ngữ cảnh tài liệu chính xác hơn.
+
+#### 3. Thành viên 3 — Bùi Công Hậu (Heading-Based Chunker)
+* **Kết quả Benchmark:** 8 / 10 điểm (Đúng 4/5 câu hỏi).
+* **Nhận xét riêng:** Đây là chiến lược tốt nhất vì bảo toàn được tiêu đề lớn và đính kèm tiêu đề gốc của section vào các chunk con. Tuy nhiên, nếu kích thước chunk quá nhỏ (`size=200`) vẫn gây ra lỗi cắt nhỏ.
+* **Bằng chứng Failure Case (Query 4):**
+  * **Query:** Người mua có thể sử dụng phương thức thanh toán trả sau SPayLater của Shopee như thế nào?
+  * **Top-1 Chunk nhận được:** `shopee-returns-guide::chunk_42` (Chỉ chứa ký tự `"b..."`).
+  * **Nguyên nhân:** Khi cắt theo tiêu đề con đệ quy với size quá nhỏ, chunk bị thu hẹp lại chỉ chứa đúng một chữ cái liệt kê rác dẫn đến mất hoàn toàn thông tin.
+  * **Đề xuất sửa đổi:** Tăng kích thước chunk tối thiểu lên `500` ký tự để chứa đủ ý của một danh mục liệt kê.
+
 **Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> Chiến lược `Heading-Based` (hoặc `Recursive`) là tốt nhất cho các văn bản chính sách thương mại điện tử. Do tài liệu chính sách chứa rất nhiều điều khoản dạng danh sách liệt kê phân cấp, việc cắt theo tiêu đề giúp giữ nguyên cấu trúc ngữ nghĩa, đồng thời đính kèm tiêu đề cha giúp các chunk con không bị mồ côi ngữ cảnh khi tính điểm tương đồng ngữ nghĩa.
+> Chiến lược `Heading-Based` là tốt nhất cho các văn bản chính sách thương mại điện tử. Do tài liệu chính sách chứa rất nhiều điều khoản dạng danh sách liệt kê phân cấp, việc cắt theo tiêu đề giúp giữ nguyên cấu trúc ngữ nghĩa, đồng thời đính kèm tiêu đề cha giúp các chunk con không bị mồ côi ngữ cảnh khi tính điểm tương đồng ngữ nghĩa.
 
 ---
 

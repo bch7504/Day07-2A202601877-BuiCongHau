@@ -24,7 +24,7 @@ from src.chunking import (
 
 # 1. Chọn bộ chia nhỏ (chunker) riêng của thành viên:
 # Các lựa chọn: "fixed_size" | "sentence" | "recursive" | "heading" | "table_aware" | "faq_pair"
-STRATEGY_OPTION = "sentence"  # Thay đổi chiến lược ở đây để chạy benchmark
+STRATEGY_OPTION = "heading"  # Thay đổi chiến lược ở đây để chạy benchmark
 CHUNK_SIZE = 200
 
 if STRATEGY_OPTION == "fixed_size":
@@ -84,18 +84,18 @@ def run_benchmark():
     backend_name = getattr(embedder, "_backend_name", embedder.__class__.__name__)
     
     print("=" * 60)
-    print("RUNNING BENCHMARK EVALUATION (CHECKPOINT 5)")
-    print(f"Chiến lược chunking: {CHUNKER_STRATEGY}")
+    print("RUNNING BENCHMARK EVALUATION (CHECKPOINT 6)")
     print(f"Mô hình nhúng: {backend_name}")
     print(f"Thư mục tài liệu: {DATA_DIR}")
     print("=" * 60)
 
-    # 2. Xây dựng cơ sở tri thức (nạp và chia nhỏ dữ liệu)
-    store = build_knowledge_base(DATA_DIR, embedding_fn=embedder, chunker=MY_CHUNKER)
-    print(f"Đã nạp {store.get_collection_size()} chunks vào EmbeddingStore.")
-    print("-" * 60)
+    # Cấu hình 3 chiến lược của 3 thành viên
+    configs = [
+        ("Nguyễn Tuấn Hùng (Fixed-Size, size=200, overlap=20)", FixedSizeChunker(chunk_size=200, overlap=20)),
+        ("Nguyễn Thị Trà My (Sentence, max_sentences=3)", SentenceChunker(max_sentences_per_chunk=3)),
+        ("Bùi Công Hậu (Heading-Based, size=200)", HeadingBasedChunker(chunk_size=200))
+    ]
 
-    # 3. Danh sách 5 câu hỏi benchmark chốt của nhóm
     queries = [
         ("Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào?", None),
         ("Thời gian tối đa để người mua gửi yêu cầu trả hàng hoàn tiền đối với thực phẩm tươi sống là bao lâu?", None),
@@ -104,42 +104,46 @@ def run_benchmark():
         ("Quy định thời gian xử lý khiếu nại Trả hàng/Hoàn tiền cho người bán là bao lâu?", {"customer_role": "both"})
     ]
 
-    agent = KnowledgeBaseAgent(store=store, llm_fn=mock_llm)
+    agent = None # Sẽ khởi tạo theo từng store
 
-    # Chạy và in ra kết quả
-    for idx, (q, meta_filter) in enumerate(queries, 1):
-        print(f"\nQUERY {idx}: {q}")
+    for name, chunker in configs:
+        print("\n" + "#" * 80)
+        print(f" CHIẾN LƯỢC: {name}")
+        print("#" * 80)
         
-        # 1. Chạy không có bộ lọc (Unfiltered Search)
-        unfiltered_results = store.search(q, top_k=3)
-        print("--- KẾT QUẢ KHÔNG CÓ BỘ LỌC (UNFILTERED) ---")
-        for rank, r in enumerate(unfiltered_results, 1):
-            source = r["metadata"].get("source", "N/A")
-            preview = r["content"][:120].replace('\n', ' ').strip()
-            print(f"  [{rank}] Score: {r['score']:.4f} | ID: {r['id']} | Source: {source}")
-            print(f"      Nội dung: {preview}...")
-        unfiltered_ans = agent.answer(q, top_k=3, metadata_filter=None)
-        print(f"  => Phản hồi Agent (Không lọc): {unfiltered_ans}")
+        store = build_knowledge_base(DATA_DIR, embedding_fn=embedder, chunker=chunker)
+        print(f"Đã nạp {store.get_collection_size()} chunks vào EmbeddingStore.")
         
-        # 2. Chạy có bộ lọc (Filtered Search) nếu có khai báo bộ lọc
-        if meta_filter:
-            print(f"\n--- KẾT QUẢ CÓ BỘ LỌC METADATA {meta_filter} (FILTERED) ---")
-            filtered_results = store.search_with_filter(q, top_k=3, metadata_filter=meta_filter)
-            for rank, r in enumerate(filtered_results, 1):
+        agent = KnowledgeBaseAgent(store=store, llm_fn=mock_llm)
+        
+        # Chạy và in ra kết quả cho 5 queries
+        for idx, (q, meta_filter) in enumerate(queries, 1):
+            print(f"\nQUERY {idx}: {q}")
+            
+            # 1. Chạy không có bộ lọc (Unfiltered Search)
+            unfiltered_results = store.search(q, top_k=3)
+            print("--- KẾT QUẢ KHÔNG CÓ BỘ LỌC (UNFILTERED) ---")
+            for rank, r in enumerate(unfiltered_results, 1):
                 source = r["metadata"].get("source", "N/A")
                 preview = r["content"][:120].replace('\n', ' ').strip()
                 print(f"  [{rank}] Score: {r['score']:.4f} | ID: {r['id']} | Source: {source}")
                 print(f"      Nội dung: {preview}...")
-            filtered_ans = agent.answer(q, top_k=3, metadata_filter=meta_filter)
-            print(f"  => Phản hồi Agent (Có lọc): {filtered_ans}")
             
-            # Phân tích so sánh A/B
-            if unfiltered_results and filtered_results:
-                if unfiltered_results[0]["id"] == filtered_results[0]["id"]:
-                    print("\n  [A/B Analysis] Kết quả lọc giống hệt không lọc ở vị trí Top-1.")
-                else:
-                    print(f"\n  [A/B Analysis] Lọc metadata ĐÃ THAY ĐỔI Top-1 từ '{unfiltered_results[0]['id']}' sang '{filtered_results[0]['id']}'!")
-        print("-" * 60)
+            # 2. Chạy có bộ lọc (Filtered Search) nếu có khai báo bộ lọc
+            if meta_filter:
+                print(f"\n--- KẾT QUẢ CÓ BỘ LỌC METADATA {meta_filter} (FILTERED) ---")
+                filtered_results = store.search_with_filter(q, top_k=3, metadata_filter=meta_filter)
+                for rank, r in enumerate(filtered_results, 1):
+                    source = r["metadata"].get("source", "N/A")
+                    preview = r["content"][:120].replace('\n', ' ').strip()
+                    print(f"  [{rank}] Score: {r['score']:.4f} | ID: {r['id']} | Source: {source}")
+                    print(f"      Nội dung: {preview}...")
+                filtered_ans = agent.answer(q, top_k=3, metadata_filter=meta_filter)
+                print(f"  => Phản hồi Agent (Có lọc): {filtered_ans}")
+            else:
+                unfiltered_ans = agent.answer(q, top_k=3, metadata_filter=None)
+                print(f"  => Phản hồi Agent (Không lọc): {unfiltered_ans}")
+            print("-" * 60)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,34 @@
+--- QUERY 1: Quy trình trả hàng hoàn tiền trên Shopee dành cho người mua gồm những bước nào? (Filter: None) ---
+Top-1 Doc ID: shopee-prohibited-items::chunk_125
+Top-1 Score: 0.3332
+Top-1 Metadata: {'doc_id': 'shopee-prohibited-items', 'title': 'Danh sách sản phẩm cấm đăng bán Shopee', 'source_url': 'https://help.shopee.vn/portal/4/article/77245', 'retrieved_at': '2026-08-03', 'document_version': '2026.1', 'customer_role': 'seller', 'category': 'listing', 'language': 'vi', 'source': 'data\\k4_ecommerce\\shopee-prohibited-items.md', 'chunk_index': 125}
+Top-1 Chunk Content: - Súng hơi nước; súng bắn phát quang hoặc bắn gây tiếng nổ.  b. Kiếm, mác, lê, dao găm, cung nỏ (làm bằng các loại vật liệu kể cả gỗ, tre, giấy nén......
+[Agent Answer] Dựa vào tài liệu Shopee: - Súng hơi nước; súng bắn phát quang hoặc bắn gây tiếng nổ. b. Kiếm, mác, lê, dao găm, cung nỏ (làm bằng các loại vật liệu kể cả gỗ, tre, giấy nén...). Các loại đồ chơi có hình dáng giống các loại vũ khí khác.
+
+--- QUERY 2: Thời gian tối đa để người mua gửi yêu cầu trả hàng hoàn tiền đối với thực phẩm tươi sống là bao lâu? (Filter: None) ---
+Top-1 Doc ID: shopee-returns-handling-time::chunk_30
+Top-1 Score: 0.3443
+Top-1 Metadata: {'doc_id': 'shopee-returns-handling-time', 'title': 'Quy định thời gian xử lý Trả hàng Hoàn tiền Shopee', 'source_url': 'https://help.shopee.vn/portal/4/article/77250', 'retrieved_at': '2026-08-03', 'document_version': '2026.1', 'customer_role': 'both', 'category': 'returns', 'language': 'vi', 'source': 'data\\k4_ecommerce\\shopee-returns-handling-time.md', 'chunk_index': 30}
+Top-1 Chunk Content: b.    Theo quy định của các đơn vị vận chuyển, khối lượng sử dụng để tính cước là mức khối lượng cao nhất khi so sánh giữa cân nặng và khối lượng q...
+[Agent Answer] Dựa vào tài liệu Shopee: b.    Theo quy định của các đơn vị vận chuyển, khối lượng sử dụng để tính cước là mức khối lượng cao nhất khi so sánh giữa cân nặng và khối lượng quy đổi của kiện hàng sau đóng gói. c.    Khối lượng quy đổi được các đơn vị vận chuyển tính như sau:
+
+--- QUERY 3: Người bán bị cấm đăng bán những loại vũ khí nào trên Shopee? (Filter: {'customer_role': 'seller'}) ---
+Top-1 Doc ID: shopee-prohibited-items::chunk_106
+Top-1 Score: 0.3350
+Top-1 Metadata: {'doc_id': 'shopee-prohibited-items', 'title': 'Danh sách sản phẩm cấm đăng bán Shopee', 'source_url': 'https://help.shopee.vn/portal/4/article/77245', 'retrieved_at': '2026-08-03', 'document_version': '2026.1', 'customer_role': 'seller', 'category': 'listing', 'language': 'vi', 'source': 'data\\k4_ecommerce\\shopee-prohibited-items.md', 'chunk_index': 106}
+Top-1 Chunk Content: IX. Quản lý thông tin xấu  🗹 Cơ chế kiểm soát tự động               🗹 Cơ chế kiểm soát riêng  🗹 Có quy định về đăng thông tin        🗹 Cơ chế giám sát...
+[Agent Answer] Dựa vào tài liệu Shopee: IX. Quản lý thông tin xấu 🗹 Cơ chế kiểm soát tự động               🗹 Cơ chế kiểm soát riêng
+
+--- QUERY 4: Người mua có thể sử dụng phương thức thanh toán trả sau SPayLater của Shopee như thế nào? (Filter: {'customer_role': 'buyer'}) ---
+Top-1 Doc ID: shopee-returns-guide::chunk_16
+Top-1 Score: 0.2664
+Top-1 Metadata: {'doc_id': 'shopee-returns-guide', 'title': 'Quy trình Trả hàng Hoàn tiền Shopee', 'source_url': 'https://help.shopee.vn/portal/4/article/77251', 'retrieved_at': '2026-08-03', 'document_version': '2026.1', 'customer_role': 'buyer', 'category': 'returns', 'language': 'vi', 'source': 'data\\k4_ecommerce\\shopee-returns-guide.md', 'chunk_index': 16}
+Top-1 Chunk Content: Người Mua hợp lệ chỉ được Trả hàng COM trong các hạn mức được tính theo tháng như sau:  a. Đối với khách hàng thân thiết hạng Vàng và Kim Cương: không...
+[Agent Answer] Dựa vào tài liệu Shopee: Người Mua hợp lệ chỉ được Trả hàng COM trong các hạn mức được tính theo tháng như sau: a. Đối với khách hàng thân thiết hạng Vàng và Kim Cương: không giới hạn hạn mức theo tháng, trừ trường hợp Người Mua thực hiện bất cứ hành vi nào vi phạm các Chính sách của Sàn TMĐT Shopee, bao gồm nhưng không giới hạn ở Điều khoản dịch vụ. Trong trường hợp đó, Người Mua mất quyền Trả hàng COM trong tháng phát sinh hành vi vi phạm.
+
+--- QUERY 5: Quy định thời gian xử lý khiếu nại Trả hàng/Hoàn tiền cho người bán là bao lâu? (Filter: {'customer_role': 'both'}) ---
+Top-1 Doc ID: shopee-returns-handling-time::chunk_22
+Top-1 Score: 0.2039
+Top-1 Metadata: {'doc_id': 'shopee-returns-handling-time', 'title': 'Quy định thời gian xử lý Trả hàng Hoàn tiền Shopee', 'source_url': 'https://help.shopee.vn/portal/4/article/77250', 'retrieved_at': '2026-08-03', 'document_version': '2026.1', 'customer_role': 'both', 'category': 'returns', 'language': 'vi', 'source': 'data\\k4_ecommerce\\shopee-returns-handling-time.md', 'chunk_index': 22}
+Top-1 Chunk Content: d.    Trên bao bì tất cả các bưu kiện đều phải có thông tin và Người Bán phải đảm bảo các thông tin liên quan đến Người Bán và Người Mua, hàng hóa...
+[Agent Answer] Dựa vào tài liệu Shopee: d.    Trên bao bì tất cả các bưu kiện đều phải có thông tin và Người Bán phải đảm bảo các thông tin liên quan đến Người Bán và Người Mua, hàng hóa mà Người Bán cung cấp là chính xác và trung thực, bao gồm: i. Thông tin Người Bán bao gồm: Tên người bán, địa chỉ gửi hàng;

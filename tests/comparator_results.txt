@@ -1,0 +1,11 @@
+Strategy: fixed_size
+  Count: 13
+  Avg Length: 193.46
+
+Strategy: by_sentences
+  Count: 7
+  Avg Length: 355.71
+
+Strategy: recursive
+  Count: 17
+  Avg Length: 146.06

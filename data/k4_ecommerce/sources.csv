@@ -1,3 +1,8 @@
 doc_id,file_path,title,source_url,retrieved_at,document_version,license_or_permission
-k4-returns-policy,data/k4_ecommerce/returns-policy.md,Chính sách đổi trả,https://example.com/chinh-sach/doi-tra,2026-08-02,2026.1,example-template-replace-me
-k4-seller-listing,data/k4_ecommerce/seller-listing.md,Quy định đăng bán,https://example.com/nguoi-ban/dang-ban,2026-08-02,2026.1,example-template-replace-me
+shopee-prohibited-items,data\k4_ecommerce\shopee-prohibited-items.md,Danh sách sản phẩm cấm đăng bán Shopee,https://help.shopee.vn/portal/4/article/77245,2026-08-03,2026.1,public-page
+shopee-refund-regulations,data\k4_ecommerce\shopee-refund-regulations.md,Quy định chung về Trả hàng Hoàn tiền của Shopee,https://help.shopee.vn/portal/4/article/188931-%5BTr%E1%BA%A3-h%C3%A0ng/Ho%C3%A0n-ti%E1%BB%81n%5D-Nh%E1%BB%AFng-quy-%C4%91%E1%BB%8Bnh-chung-v%E1%BB%81-Tr%E1%BA%A3-h%C3%A0ng/Ho%C3%A0n-ti%E1%BB%81n-c%E1%BB%A7a-Shopee,2026-08-03,2026.1,public-page
+shopee-returns-guide,data\k4_ecommerce\shopee-returns-guide.md,Quy trình Trả hàng Hoàn tiền Shopee,https://help.shopee.vn/portal/4/article/77251,2026-08-03,2026.1,public-page
+shopee-returns-handling-time,data\k4_ecommerce\shopee-returns-handling-time.md,Quy định thời gian xử lý Trả hàng Hoàn tiền Shopee,https://help.shopee.vn/portal/4/article/77250,2026-08-03,2026.1,public-page
+shopee-spaylater-guide,data\k4_ecommerce\shopee-spaylater-guide.md,Hướng dẫn thanh toán SPayLater Shopee,https://help.shopee.vn/portal/4/article/79233,2026-08-03,2026.1,public-page
+tiki-hub-return-points,data\k4_ecommerce\tiki-hub-return-points.md,Tiki Hub - Nơi tiếp nhận ký gửi hàng đổi trả & bảo hành,https://hotro.tiki.vn/knowledge-base/post/760-tiki-hub%2d%2d%2dnoi-tiep-nhan-ky-gui-hang-doi-tra-&-bao-hanh,2026-08-03,2026.1,public-page
+tiki-after-sales-policy,data\k4_ecommerce\tiki-after-sales-policy.md,Chính sách hậu mãi: Đổi mới, trả hàng hoàn tiền và bảo hành sản phẩm,https://hotro.tiki.vn/knowledge-base/post/787-chinh-sach-hau-mai:-doi-moi,-tra-hang-hoan-tien-va-bao-hanh-san-pham,2026-08-03,2026.1,public-page

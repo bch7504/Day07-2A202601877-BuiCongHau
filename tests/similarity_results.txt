@@ -1,0 +1,24 @@
+Pair 1:
+  A: Quy trình trả hàng hoàn tiền trên Shopee
+  B: Làm thế nào để yêu cầu trả hàng và nhận lại tiền
+  Actual Cosine Similarity: -0.0961
+
+Pair 2:
+  A: Danh sách sản phẩm cấm đăng bán
+  B: Những mặt hàng không được phép bán trên sàn
+  Actual Cosine Similarity: 0.1392
+
+Pair 3:
+  A: SPayLater là phương thức thanh toán trả sau
+  B: Thời hạn thanh toán SPayLater là bao lâu
+  Actual Cosine Similarity: -0.0433
+
+Pair 4:
+  A: Thời gian giao hàng của SPX Instant là 1 đến 2 giờ
+  B: Hôm nay tôi ăn cơm với thịt kho tàu
+  Actual Cosine Similarity: 0.0771
+
+Pair 5:
+  A: Người bán bị phạt điểm Sao Quả Tạ khi đăng bán hàng cấm
+  B: Điểm phạt Sao Quả Tạ và quy định đăng bán sản phẩm
+  Actual Cosine Similarity: -0.0631
